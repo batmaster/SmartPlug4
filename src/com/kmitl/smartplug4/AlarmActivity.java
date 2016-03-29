@@ -10,16 +10,20 @@ import com.github.jjobes.slidedatetimepicker.SlideDateTimePicker;
 import com.kmitl.smartplug4.R;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +34,7 @@ import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.DatePicker;
@@ -83,7 +88,69 @@ public class AlarmActivity extends FragmentActivity {
                 final EditText editTextDateTime = (EditText) dialog.findViewById(R.id.editTextDateTime);
         		Button buttonClear = (Button) dialog.findViewById(R.id.buttonClear);
             	//final Switch switchEveryday = (Switch) dialog.findViewById(R.id.switchEveryday);
-                final Switch switch1 = (Switch) dialog.findViewById(R.id.switch1);
+                
+
+        		final Switch switch1 = (Switch) dialog.findViewById(R.id.switch1);
+                final Switch switch2 = (Switch) dialog.findViewById(R.id.switch2);
+                final Switch switch3 = (Switch) dialog.findViewById(R.id.switch3);
+                final Switch switch4 = (Switch) dialog.findViewById(R.id.switch4);
+        		
+        		final CheckBox checkBox1 = (CheckBox) dialog.findViewById(R.id.checkBox1);
+                checkBox1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+					
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						if (isChecked) {
+							switch1.setVisibility(View.VISIBLE);
+						}
+						else {
+							switch1.setVisibility(View.INVISIBLE);
+						}
+					}
+				});
+                
+                final CheckBox checkBox2 = (CheckBox) dialog.findViewById(R.id.checkBox2);
+                checkBox2.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+					
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						if (isChecked) {
+							switch2.setVisibility(View.VISIBLE);
+						}
+						else {
+							switch2.setVisibility(View.INVISIBLE);
+						}
+					}
+				});
+                
+                final CheckBox checkBox3 = (CheckBox) dialog.findViewById(R.id.checkBox3);
+                checkBox3.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+					
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						if (isChecked) {
+							switch3.setVisibility(View.VISIBLE);
+						}
+						else {
+							switch3.setVisibility(View.INVISIBLE);
+						}
+					}
+				});
+                
+                final CheckBox checkBox4 = (CheckBox) dialog.findViewById(R.id.checkBox4);
+                checkBox4.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+					
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						if (isChecked) {
+							switch4.setVisibility(View.VISIBLE);
+						}
+						else {
+							switch4.setVisibility(View.INVISIBLE);
+						}
+					}
+				});
+        		
         		final Button buttonAdd = (Button) dialog.findViewById(R.id.buttonAdd);
                 
 				final SlideDateTimeListener listener = new SlideDateTimeListener() {
@@ -134,12 +201,10 @@ public class AlarmActivity extends FragmentActivity {
         			public void afterTextChanged(Editable arg0) {
         				if (editTextDateTime.getText().toString().equals("")) {
         					buttonAdd.setVisibility(View.GONE);
-        					switch1.setVisibility(View.GONE);
         					//switchEveryday.setVisibility(View.GONE);
         				}
         				else {
         					buttonAdd.setVisibility(View.VISIBLE);
-        					switch1.setVisibility(View.VISIBLE);
         					//switchEveryday.setVisibility(View.VISIBLE);
         				}
         			}
@@ -153,18 +218,18 @@ public class AlarmActivity extends FragmentActivity {
         			}
         		});
         		
-        		
         		buttonAdd.setOnClickListener(new OnClickListener() {
 					
 					@Override
 					public void onClick(View v) {
-						//SharedValues.addDateTime(getApplicationContext(), switchEveryday.isChecked() ? SharedValues.KEY_EVERYDAY : SharedValues.KEY_ONETIME, new DateTimeItem(editTextDateTime.getText().toString(), switch1.isChecked()));
-						SharedValues.addDateTime(getApplicationContext(), SharedValues.KEY_ONETIME, new DateTimeItem(editTextDateTime.getText().toString(), switch1.isChecked()));
-						/*if (switchEveryday.isChecked())
-							listViewTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_EVERYDAY)));
-						else*/
-							listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_ONETIME)));
+						int a = !checkBox1.isChecked() ? 2 : (switch1.isChecked() ? 1 : 0);
+						int b = !checkBox2.isChecked() ? 2 : (switch2.isChecked() ? 1 : 0);
+						int c = !checkBox3.isChecked() ? 2 : (switch3.isChecked() ? 1 : 0);
+						int d = !checkBox4.isChecked() ? 2 : (switch4.isChecked() ? 1 : 0);
+						String datetime = editTextDateTime.getText().toString();
 						
+						SendAlarmTask task = new SendAlarmTask(getApplicationContext(), a, b, c, d, datetime);
+						task.execute();
 						editTextDateTime.setText("");
 						dialog.dismiss();
 					}
@@ -223,7 +288,7 @@ public class AlarmActivity extends FragmentActivity {
 			if (convertView == null)
 				convertView = mInflater.inflate(R.layout.listview_row, parent, false);
 			
-			Switch switch1 = (Switch) convertView.findViewById(R.id.switch1);
+			final Switch switch1 = (Switch) convertView.findViewById(R.id.switch1);
 			switch1.setChecked((datetime.get(position).getState()));
 			switch1.setClickable(false);
 			
@@ -246,11 +311,54 @@ public class AlarmActivity extends FragmentActivity {
 						listViewTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_EVERYDAY)));
 					else*/
 						listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_ONETIME)));
+				
 				}
 			});
 
 			return convertView;
 		}
 
+	}
+	
+	private class SendAlarmTask extends AsyncTask<Void, Void, String> {
+		
+		private Context context;
+		private ProgressDialog dialog;
+		
+		private String param;
+		
+		public SendAlarmTask(Context context, int a, int b, int c, int d, String datetime) {
+			this.context = context;
+			this.param = String.valueOf(a) + String.valueOf(b) + String.valueOf(c) + String.valueOf(d) + "_" + datetime.replace(' ', '_');
+			
+			dialog = new ProgressDialog(AlarmActivity.this);
+			dialog.setCancelable(false);
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			Log.d("p", "TryToConnectTask: Pre");
+			dialog.setMessage("Trying to connect...");
+			
+			if (!dialog.isShowing()) {
+				dialog.show();
+            }
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			Log.d("p", "TryToConnectTask: In");
+			return Service.sendHttpRequest(context, "2" + param, Service.SOCKET_TIMEOUT_TRYING);
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			Log.d("p", "TryToConnectTask: Post");
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+            }
+			
+			
+		}
 	}
 }

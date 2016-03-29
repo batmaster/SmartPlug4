@@ -32,8 +32,7 @@ import android.util.Log;
 
 public class SharedValues {
 	
-	public static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-	public static final SimpleDateFormat sdf_everyday = new SimpleDateFormat("HH:mm");
+	public static final SimpleDateFormat sdf = new SimpleDateFormat("d-M-yyyy H:m");
 	
 	public static String KEY_EVERYDAY = "KEY_EVERYDAY";
 	public static String KEY_ONETIME = "KEY_ONETIME";

@@ -158,7 +158,7 @@ public class SwitchActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (ready) {
-					SwitchTask task = new SwitchTask(getApplicationContext());
+					SwitchTask task = new SwitchTask(getApplicationContext(), 10);
 					task.execute();
 				}
 				else {
@@ -168,6 +168,57 @@ public class SwitchActivity extends Activity {
 		});
 		
 		imageViewBulb1 = (ImageView) findViewById(R.id.imageViewBulb1);
+		
+		imageViewSwitch2 = (ImageView) findViewById(R.id.imageViewSwitch2);
+		imageViewSwitch2.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (ready) {
+					SwitchTask task = new SwitchTask(getApplicationContext(), 11);
+					task.execute();
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Sending in progress, please wait and try again.", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
+		imageViewBulb2 = (ImageView) findViewById(R.id.imageViewBulb2);
+		
+		imageViewSwitch3 = (ImageView) findViewById(R.id.imageViewSwitch3);
+		imageViewSwitch3.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (ready) {
+					SwitchTask task = new SwitchTask(getApplicationContext(), 12);
+					task.execute();
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Sending in progress, please wait and try again.", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
+		imageViewBulb3 = (ImageView) findViewById(R.id.imageViewBulb3);
+		
+		imageViewSwitch4 = (ImageView) findViewById(R.id.imageViewSwitch4);
+		imageViewSwitch4.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (ready) {
+					SwitchTask task = new SwitchTask(getApplicationContext(), 13);
+					task.execute();
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Sending in progress, please wait and try again.", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
+		imageViewBulb4 = (ImageView) findViewById(R.id.imageViewBulb4);
 		
 		imageViewSetAlarm = (ImageView) findViewById(R.id.imageViewSetAlarm);
 		imageViewSetAlarm.setOnClickListener(new OnClickListener() {
@@ -241,8 +292,17 @@ public class SwitchActivity extends Activity {
 
 
 	private void refreshStatus(String the8Digits, boolean isShowDialog) {
-			imageViewSwitch1.setImageResource(the8Digits.charAt(1) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewSwitch1.setImageResource(the8Digits.charAt(4) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
 			imageViewBulb1.setImageResource(the8Digits.charAt(0) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			
+			imageViewSwitch2.setImageResource(the8Digits.charAt(5) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb2.setImageResource(the8Digits.charAt(1) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			
+			imageViewSwitch3.setImageResource(the8Digits.charAt(6) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb3.setImageResource(the8Digits.charAt(2) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			
+			imageViewSwitch4.setImageResource(the8Digits.charAt(7) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb4.setImageResource(the8Digits.charAt(3) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
 			
 			if (isShowDialog) {
 				if (the8Digits.charAt(0) != the8Digits.charAt(1)) {
@@ -290,7 +350,7 @@ public class SwitchActivity extends Activity {
 				dialog.dismiss();
             }
 			
-			if (result.length() == 2) {
+			if (result.length() == 8) {
 				refreshStatus(result, showDialog);
 			}
 			else {
@@ -318,9 +378,9 @@ public class SwitchActivity extends Activity {
 		private int switchIndex;
 		private ProgressDialog dialog;
 		
-		public SwitchTask(Context context) {
+		public SwitchTask(Context context, int pin) {
 			this.context = context;
-			this.switchPin = String.valueOf(10);
+			this.switchPin = String.valueOf(pin);
 			this.switchIndex = 1;
 			
 			dialog = new ProgressDialog(SwitchActivity.this);
@@ -351,7 +411,7 @@ public class SwitchActivity extends Activity {
 				dialog.dismiss();
             }
 			
-			if (result.length() == 2) {
+			if (result.length() == 8) {
 				refreshStatus(result, false);
 			}
 			else {
