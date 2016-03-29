@@ -1,4 +1,4 @@
-package com.kmitl.smartplug;
+package com.kmitl.smartplug4;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +30,9 @@ public class Receiver extends BroadcastReceiver {
 			checkI(context);
 			
 			checkGPS(context, false);
+			
+            context.sendBroadcast(new Intent("com.kmitl.smartplug.refreshSwitch"));
+            context.sendBroadcast(new Intent("com.kmitl.smartplug.refreshAlarm"));
 		}
 	}
 	

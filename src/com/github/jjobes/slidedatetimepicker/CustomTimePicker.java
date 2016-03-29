@@ -2,7 +2,7 @@ package com.github.jjobes.slidedatetimepicker;
 
 import java.lang.reflect.Field;
 
-import com.kmitl.smartplug.R;
+import com.kmitl.smartplug4.R;
 
 import android.content.Context;
 import android.util.AttributeSet;

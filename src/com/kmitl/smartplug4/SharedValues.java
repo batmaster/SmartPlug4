@@ -1,4 +1,4 @@
-package com.kmitl.smartplug;
+package com.kmitl.smartplug4;
 
 import java.io.File;
 import java.io.FileInputStream;

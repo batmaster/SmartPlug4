@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import com.kmitl.smartplug.R;
+import com.kmitl.smartplug4.R;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

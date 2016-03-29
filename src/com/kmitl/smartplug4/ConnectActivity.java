@@ -1,8 +1,10 @@
-package com.kmitl.smartplug;
+package com.kmitl.smartplug4;
 
 import java.net.SocketException;
 
 import org.apache.http.conn.ConnectTimeoutException;
+
+import com.kmitl.smartplug4.R;
 
 import android.app.Activity;
 import android.app.ActivityManager;

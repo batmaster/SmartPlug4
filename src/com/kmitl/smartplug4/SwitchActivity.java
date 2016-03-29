@@ -1,15 +1,19 @@
-package com.kmitl.smartplug;
+package com.kmitl.smartplug4;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import com.kmitl.smartplug4.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -42,8 +46,14 @@ public class SwitchActivity extends Activity {
     private static final int REQUEST_MOCK_SETTING = 12892;
 	
 	private TextView textView0;
-	private ImageView imageViewSwitch;
-	private ImageView imageViewBulb;
+	private ImageView imageViewSwitch1;
+	private ImageView imageViewBulb1;
+	private ImageView imageViewSwitch2;
+	private ImageView imageViewBulb2;
+	private ImageView imageViewSwitch3;
+	private ImageView imageViewBulb3;
+	private ImageView imageViewSwitch4;
+	private ImageView imageViewBulb4;
 	private ImageView imageViewLocation;
 	private ImageView imageViewSetAlarm;
 	private ImageView imageViewSetWifi;
@@ -51,11 +61,23 @@ public class SwitchActivity extends Activity {
 	
 	public static SwitchActivity activity;
 	private GPSTracker gpsTracker;
+	
+	private BroadcastReceiver refreshSwitch;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_switch);
+		
+		refreshSwitch = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				CheckStateTask task = new CheckStateTask(getApplicationContext(), false);
+		    	task.execute();
+			}
+		};
+		
+		registerReceiver(refreshSwitch, new IntentFilter("com.kmitl.smartplug.refreshSwitch"));
 		
 		gpsTracker = new GPSTracker(getApplicationContext());
 		
@@ -130,8 +152,8 @@ public class SwitchActivity extends Activity {
 			}
 		});
 		
-		imageViewSwitch = (ImageView) findViewById(R.id.imageViewSwitch);
-		imageViewSwitch.setOnClickListener(new OnClickListener() {
+		imageViewSwitch1 = (ImageView) findViewById(R.id.imageViewSwitch1);
+		imageViewSwitch1.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -145,7 +167,7 @@ public class SwitchActivity extends Activity {
 			}
 		});
 		
-		imageViewBulb = (ImageView) findViewById(R.id.imageViewBulb);
+		imageViewBulb1 = (ImageView) findViewById(R.id.imageViewBulb1);
 		
 		imageViewSetAlarm = (ImageView) findViewById(R.id.imageViewSetAlarm);
 		imageViewSetAlarm.setOnClickListener(new OnClickListener() {
@@ -209,9 +231,18 @@ public class SwitchActivity extends Activity {
 		refreshStatus(getIntent().getStringExtra("the8Digits"), false);
 	}
 	
+	
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(refreshSwitch);
+		super.onDestroy();
+	}
+
+
+
 	private void refreshStatus(String the8Digits, boolean isShowDialog) {
-			imageViewSwitch.setImageResource(the8Digits.charAt(1) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
-			imageViewBulb.setImageResource(the8Digits.charAt(0) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			imageViewSwitch1.setImageResource(the8Digits.charAt(1) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb1.setImageResource(the8Digits.charAt(0) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
 			
 			if (isShowDialog) {
 				if (the8Digits.charAt(0) != the8Digits.charAt(1)) {
