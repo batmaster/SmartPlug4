@@ -1,5 +1,7 @@
 package com.kmitl.smartplug4;
 
+import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +47,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class AlarmActivity extends FragmentActivity {
 
@@ -65,7 +68,8 @@ public class AlarmActivity extends FragmentActivity {
 		refreshAlarm = new BroadcastReceiver(){
 			@Override
 		    public void onReceive(Context context, Intent intent) {
-		    	listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_ONETIME)));
+		    	CheckAlarmTask task = new CheckAlarmTask(getApplicationContext());
+		    	task.execute();
 		    }
 		};
 		
@@ -244,10 +248,13 @@ public class AlarmActivity extends FragmentActivity {
 		});
 		
 		listViewDateTime = (ListView) findViewById(R.id.listViewDateTime);
-		listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_ONETIME)));
 		
 		//listViewTime = (ListView) findViewById(R.id.listViewTime);
 		//listViewTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_EVERYDAY)));
+	
+	
+		CheckAlarmTask task = new CheckAlarmTask(getApplicationContext());
+		task.execute();
 	}
 
 	@Override
@@ -288,9 +295,33 @@ public class AlarmActivity extends FragmentActivity {
 			if (convertView == null)
 				convertView = mInflater.inflate(R.layout.listview_row, parent, false);
 			
-			final Switch switch1 = (Switch) convertView.findViewById(R.id.switch1);
-			switch1.setChecked((datetime.get(position).getState()));
-			switch1.setClickable(false);
+			ToggleButton toggleButton1 = (ToggleButton) convertView.findViewById(R.id.toggleButton1);
+			toggleButton1.setChecked(datetime.get(position).get1() == 1);
+			if (datetime.get(position).get1() == 2) {
+				toggleButton1.setTextOff("");
+				toggleButton1.setTextOn("");
+			}
+			
+			ToggleButton toggleButton2 = (ToggleButton) convertView.findViewById(R.id.toggleButton2);
+			toggleButton2.setChecked(datetime.get(position).get2() == 1);
+			if (datetime.get(position).get2() == 2) {
+				toggleButton2.setTextOff("");
+				toggleButton2.setTextOn("");
+			}
+			
+			ToggleButton toggleButton3 = (ToggleButton) convertView.findViewById(R.id.toggleButton3);
+			toggleButton3.setChecked(datetime.get(position).get3() == 1);
+			if (datetime.get(position).get3() == 2) {
+				toggleButton3.setTextOff("");
+				toggleButton3.setTextOn("");
+			}
+			
+			ToggleButton toggleButton4 = (ToggleButton) convertView.findViewById(R.id.toggleButton4);
+			toggleButton4.setChecked(datetime.get(position).get4() == 1);
+			if (datetime.get(position).get4() == 2) {
+				toggleButton4.setTextOff("");
+				toggleButton4.setTextOn("");
+			}
 			
 			TextView textViewTime = (TextView) convertView.findViewById(R.id.textViewTime);
 			textViewTime.setText(datetime.get(position).getTime());
@@ -306,12 +337,7 @@ public class AlarmActivity extends FragmentActivity {
 				
 				@Override
 				public void onClick(View v) {
-					SharedValues.removeDateTime(getApplicationContext(), KEY, ITEM);
-					/*if (KEY.equals(SharedValues.KEY_EVERYDAY))
-						listViewTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_EVERYDAY)));
-					else*/
-						listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), SharedValues.getDateTimeList(getApplicationContext(), SharedValues.KEY_ONETIME)));
-				
+					Toast.makeText(getApplicationContext(), "ยังไม่ได้ทำไรเลย", Toast.LENGTH_SHORT).show();
 				}
 			});
 
@@ -358,6 +384,112 @@ public class AlarmActivity extends FragmentActivity {
 				dialog.dismiss();
             }
 			
+			
+		}
+	}
+	
+	private class CheckAlarmTask extends AsyncTask<Void, Void, String> {
+		
+		private Context context;
+		private ProgressDialog dialog;
+		
+		public CheckAlarmTask(Context context) {
+			this.context = context;
+			dialog = new ProgressDialog(AlarmActivity.this);
+			dialog.setCancelable(false);
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			Log.d("p", "TryToConnectTask: Pre");
+			dialog.setMessage("Trying to connect...");
+			
+			if (!dialog.isShowing()) {
+				dialog.show();
+            }
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			Log.d("p", "TryToConnectTask: In");
+			return Service.sendHttpRequest(context, "3", Service.SOCKET_TIMEOUT_TRYING);
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			Log.d("p", "TryToConnectTask: Post");
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+            }
+			try {
+				String[] date = result.split("A");
+				ArrayList<DateTimeItem> items = new ArrayList<DateTimeItem>();
+				
+				Date now = new Date();
+				for (int i = 0; i < date.length; i++) {
+					try {
+						Date d = SharedValues.sdf.parse(date[i].substring(5).replace("_", " "));
+						if (now.before(d)) {
+							items.add(new DateTimeItem(SharedValues.sdf.format(d), date[i].substring(0, 4)));
+						}
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+				Collections.sort(items);
+				listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), items));
+				
+				SetAlarmTask task = new SetAlarmTask(getApplicationContext(), items);
+				task.execute();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			
+		}
+	}
+	
+	private class SetAlarmTask extends AsyncTask<Void, Void, String> {
+		
+		private Context context;
+		private ProgressDialog dialog;
+		
+		private String param;
+		
+		public SetAlarmTask(Context context, ArrayList<DateTimeItem> items) {
+			this.context = context;
+			dialog = new ProgressDialog(AlarmActivity.this);
+			dialog.setCancelable(false);
+			param = "";
+			
+			for (int i = 0; i < items.size(); i++) {
+				param += items.get(i).getStates() + "_" + SharedValues.sdf.format(items.get(i).getDateTime()).replace(" ", "_") + "A";
+			}
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			Log.d("p", "TryToConnectTask: Pre");
+			dialog.setMessage("Trying to connect...");
+			
+			if (!dialog.isShowing()) {
+				dialog.show();
+            }
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			Log.d("p", "TryToConnectTask: In");
+			return Service.sendHttpRequest(context, "5" + param, Service.SOCKET_TIMEOUT_TRYING);
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			Log.d("p", "TryToConnectTask: Post");
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+            }
+
 			
 		}
 	}

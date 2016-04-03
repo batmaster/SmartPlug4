@@ -1,5 +1,8 @@
 package com.kmitl.smartplug4;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -246,36 +249,9 @@ public class SwitchActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				double I = new LogIDBHelper(getApplicationContext()).getAllI();
+				GetITask task = new GetITask(getApplicationContext());
+				task.execute();
 				
-				final Dialog dialog = new Dialog(SwitchActivity.this);
-	            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-	            dialog.setContentView(R.layout.custom_dialog_unit);
-	            dialog.setCancelable(true);
-	            
-	            final double unit = I * 0.00383333;
-
-	            TextView textViewUnit = (TextView) dialog.findViewById(R.id.textViewUnit);
-	            textViewUnit.setText(String.format("%.15f", unit));
-	            final EditText editTextU = (EditText) dialog.findViewById(R.id.editTextU);
-	            final TextView textViewBaht = (TextView) dialog.findViewById(R.id.textViewBaht);
-	            
-	            editTextU.setOnKeyListener(new OnKeyListener() {
-					
-					@Override
-					public boolean onKey(View v, int keyCode, KeyEvent event) {
-						try {
-							double baht = unit * Double.parseDouble(editTextU.getText().toString());
-							textViewBaht.setText(String.format("%.2f ฿", baht));
-						}
-						catch (NumberFormatException e) {
-							
-						}
-						return false;
-					}
-				});
-	            
-	            dialog.show();
 			}
 		});
 		
@@ -552,6 +528,98 @@ public class SwitchActivity extends Activity {
 				SwitchActivity.activity.finish();
 				SwitchActivity.this.finish();
 			}
+		}
+	}
+	
+	private class GetITask extends AsyncTask<Void, Void, String> {
+		
+		private Context context;
+		private String ssid;
+		private String password;
+		private Dialog outerDialog;
+		
+		private ProgressDialog dialog;
+		
+		public GetITask(Context context) {
+			this.context = context;
+			
+			dialog = new ProgressDialog(SwitchActivity.this);
+			dialog.setCancelable(true);
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.setMessage("Trying to connect...");
+			
+			if (!dialog.isShowing()) {
+				dialog.show();
+            }
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			return Service.sendHttpRequest(context, "6", Service.SOCKET_TIMEOUT_TRYING);
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+            }
+			ArrayList<Date> dates = new ArrayList<Date>();
+			ArrayList<Double> is = new ArrayList<Double>();
+			
+			String[] splitsa = result.split("A");
+			for (int i = 0; i < splitsa.length; i++) {
+				String[] splitsc = splitsa[i].split(",");
+				try {
+					dates.add(SharedValues.sdf.parse(splitsc[0].replace("_", " ")));
+					is.add(Double.parseDouble(splitsc[1]));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			double W = 0;
+			Date now = new Date();
+			if (dates.size() > 1) {
+				for (int i = 1; i < dates.size(); i++) {
+					if (dates.get(i).getMonth() == now.getMonth() && dates.get(i).getYear() == now.getYear()) {
+						long diff = dates.get(i).getTime() - dates.get(i - 1).getTime();
+						long diffMinutes = diff / (60 * 1000); 
+						W += diffMinutes * is.get(i - 1);
+					}
+				}
+			}
+			
+			final Dialog dialog = new Dialog(SwitchActivity.this);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.custom_dialog_unit);
+            dialog.setCancelable(true);
+            
+            final double unit = W * 0.00383333;
+
+            TextView textViewUnit = (TextView) dialog.findViewById(R.id.textViewUnit);
+            textViewUnit.setText(String.format("%.15f", unit));
+            final EditText editTextU = (EditText) dialog.findViewById(R.id.editTextU);
+            final TextView textViewBaht = (TextView) dialog.findViewById(R.id.textViewBaht);
+            
+            editTextU.setOnKeyListener(new OnKeyListener() {
+				
+				@Override
+				public boolean onKey(View v, int keyCode, KeyEvent event) {
+					try {
+						double baht = unit * Double.parseDouble(editTextU.getText().toString());
+						textViewBaht.setText(String.format("%.2f ฿", baht));
+					}
+					catch (NumberFormatException e) {
+						
+					}
+					return false;
+				}
+			});
+            
+            dialog.show();
 		}
 	}
 	

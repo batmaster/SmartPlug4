@@ -1,21 +1,29 @@
 package com.kmitl.smartplug4;
 
+import java.text.ParseException;
+import java.util.Date;
+
 public class DateTimeItem implements Comparable<DateTimeItem> {
 	
 	private String date;
 	private String time;
 	
-	private boolean state;
+	private Date d;
 	
-	public DateTimeItem(String datetime, boolean state) {
+	private String states;
+	
+	public DateTimeItem(String datetime, String states) {
 		setDateTime(datetime);
-		this.state = state;
+		try {
+			d = SharedValues.sdf.parse(datetime);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		this.states = states;
 	}
 
-	public String getDateTime() {
-		if (date.equals(""))
-			return time;
-		return date + " " + time;
+	public Date getDateTime() {
+		return d;
 	}
 
 	public void setDateTime(String datetime) {
@@ -38,13 +46,24 @@ public class DateTimeItem implements Comparable<DateTimeItem> {
 		return time;
 	}
 	
-	public boolean getState() {
-		return state;
+	public int get1() {
+		return states.charAt(0) - 48;
 	}
-
-	@Override
-	public String toString() {
-		return getDateTime() + " " + state;
+	
+	public int get2() {
+		return states.charAt(1) - 48;
+	}
+	
+	public int get3() {
+		return states.charAt(2) - 48;
+	}
+	
+	public int get4() {
+		return states.charAt(3) - 48;
+	}
+	
+	public String getStates() {
+		return states;
 	}
 
 	@Override
@@ -57,7 +76,7 @@ public class DateTimeItem implements Comparable<DateTimeItem> {
 
 	@Override
 	public int compareTo(DateTimeItem arg0) {
-		return getDateTime().compareTo(arg0.getDateTime());
+		return d.compareTo(arg0.getDateTime());
 	}
 
 }
