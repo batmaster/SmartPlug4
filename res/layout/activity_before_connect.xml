@@ -42,9 +42,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="false"
-        android:layout_marginTop="40px"
+        android:layout_marginTop="20px"
         android:adjustViewBounds="true"
-        android:src="@drawable/lippo" />
+        android:src="@drawable/ice" />
 
     <TextView
         android:id="@+id/TextView1"
@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/ImageView1"
         android:layout_below="@+id/ImageView1"
-        android:layout_marginTop="29dp"
+        android:layout_marginTop="19dp"
         android:gravity="center_horizontal"
         android:text="Select Mode"
         android:textAppearance="?android:attr/textAppearanceMedium" />
