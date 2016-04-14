@@ -1,7 +1,9 @@
-package com.kmitl.smartplug;
+package com.kmitl.smartplug4;
 
 import java.util.ArrayList;
 import java.util.Date;
+
+import com.kmitl.smartplug4.R;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;

@@ -1,15 +1,22 @@
-package com.kmitl.smartplug;
+package com.kmitl.smartplug4;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import com.kmitl.smartplug4.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -42,8 +49,14 @@ public class SwitchActivity extends Activity {
     private static final int REQUEST_MOCK_SETTING = 12892;
 	
 	private TextView textView0;
-	private ImageView imageViewSwitch;
-	private ImageView imageViewBulb;
+	private ImageView imageViewSwitch1;
+	private ImageView imageViewBulb1;
+	private ImageView imageViewSwitch2;
+	private ImageView imageViewBulb2;
+	private ImageView imageViewSwitch3;
+	private ImageView imageViewBulb3;
+	private ImageView imageViewSwitch4;
+	private ImageView imageViewBulb4;
 	private ImageView imageViewLocation;
 	private ImageView imageViewSetAlarm;
 	private ImageView imageViewSetWifi;
@@ -51,11 +64,23 @@ public class SwitchActivity extends Activity {
 	
 	public static SwitchActivity activity;
 	private GPSTracker gpsTracker;
+	
+	private BroadcastReceiver refreshSwitch;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_switch);
+		
+		refreshSwitch = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				CheckStateTask task = new CheckStateTask(getApplicationContext(), false);
+		    	task.execute();
+			}
+		};
+		
+		registerReceiver(refreshSwitch, new IntentFilter("com.kmitl.smartplug.refreshSwitch"));
 		
 		gpsTracker = new GPSTracker(getApplicationContext());
 		
@@ -130,13 +155,13 @@ public class SwitchActivity extends Activity {
 			}
 		});
 		
-		imageViewSwitch = (ImageView) findViewById(R.id.imageViewSwitch);
-		imageViewSwitch.setOnClickListener(new OnClickListener() {
+		imageViewSwitch1 = (ImageView) findViewById(R.id.imageViewSwitch1);
+		imageViewSwitch1.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				if (ready) {
-					SwitchTask task = new SwitchTask(getApplicationContext());
+					SwitchTask task = new SwitchTask(getApplicationContext(), 10);
 					task.execute();
 				}
 				else {
@@ -145,7 +170,58 @@ public class SwitchActivity extends Activity {
 			}
 		});
 		
-		imageViewBulb = (ImageView) findViewById(R.id.imageViewBulb);
+		imageViewBulb1 = (ImageView) findViewById(R.id.imageViewBulb1);
+		
+		imageViewSwitch2 = (ImageView) findViewById(R.id.imageViewSwitch2);
+		imageViewSwitch2.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (ready) {
+					SwitchTask task = new SwitchTask(getApplicationContext(), 11);
+					task.execute();
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Sending in progress, please wait and try again.", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
+		imageViewBulb2 = (ImageView) findViewById(R.id.imageViewBulb2);
+		
+		imageViewSwitch3 = (ImageView) findViewById(R.id.imageViewSwitch3);
+		imageViewSwitch3.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (ready) {
+					SwitchTask task = new SwitchTask(getApplicationContext(), 12);
+					task.execute();
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Sending in progress, please wait and try again.", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
+		imageViewBulb3 = (ImageView) findViewById(R.id.imageViewBulb3);
+		
+		imageViewSwitch4 = (ImageView) findViewById(R.id.imageViewSwitch4);
+		imageViewSwitch4.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (ready) {
+					SwitchTask task = new SwitchTask(getApplicationContext(), 13);
+					task.execute();
+				}
+				else {
+					Toast.makeText(getApplicationContext(), "Sending in progress, please wait and try again.", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+		
+		imageViewBulb4 = (ImageView) findViewById(R.id.imageViewBulb4);
 		
 		imageViewSetAlarm = (ImageView) findViewById(R.id.imageViewSetAlarm);
 		imageViewSetAlarm.setOnClickListener(new OnClickListener() {
@@ -173,45 +249,36 @@ public class SwitchActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				double I = new LogIDBHelper(getApplicationContext()).getAllI();
+				GetITask task = new GetITask(getApplicationContext());
+				task.execute();
 				
-				final Dialog dialog = new Dialog(SwitchActivity.this);
-	            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-	            dialog.setContentView(R.layout.custom_dialog_unit);
-	            dialog.setCancelable(true);
-	            
-	            final double unit = I * 0.00383333;
-
-	            TextView textViewUnit = (TextView) dialog.findViewById(R.id.textViewUnit);
-	            textViewUnit.setText(String.format("%.15f", unit));
-	            final EditText editTextU = (EditText) dialog.findViewById(R.id.editTextU);
-	            final TextView textViewBaht = (TextView) dialog.findViewById(R.id.textViewBaht);
-	            
-	            editTextU.setOnKeyListener(new OnKeyListener() {
-					
-					@Override
-					public boolean onKey(View v, int keyCode, KeyEvent event) {
-						try {
-							double baht = unit * Double.parseDouble(editTextU.getText().toString());
-							textViewBaht.setText(String.format("%.2f ฿", baht));
-						}
-						catch (NumberFormatException e) {
-							
-						}
-						return false;
-					}
-				});
-	            
-	            dialog.show();
 			}
 		});
 		
 		refreshStatus(getIntent().getStringExtra("the8Digits"), false);
 	}
 	
+	
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(refreshSwitch);
+		super.onDestroy();
+	}
+
+
+
 	private void refreshStatus(String the8Digits, boolean isShowDialog) {
-			imageViewSwitch.setImageResource(the8Digits.charAt(1) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
-			imageViewBulb.setImageResource(the8Digits.charAt(0) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			imageViewSwitch1.setImageResource(the8Digits.charAt(4) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb1.setImageResource(the8Digits.charAt(0) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			
+			imageViewSwitch2.setImageResource(the8Digits.charAt(5) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb2.setImageResource(the8Digits.charAt(1) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			
+			imageViewSwitch3.setImageResource(the8Digits.charAt(6) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb3.setImageResource(the8Digits.charAt(2) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
+			
+			imageViewSwitch4.setImageResource(the8Digits.charAt(7) == '0' ? R.drawable.switch_off : R.drawable.switch_on);
+			imageViewBulb4.setImageResource(the8Digits.charAt(3) == '0' ? R.drawable.bulb_off : R.drawable.bulb_on);
 			
 			if (isShowDialog) {
 				if (the8Digits.charAt(0) != the8Digits.charAt(1)) {
@@ -259,7 +326,7 @@ public class SwitchActivity extends Activity {
 				dialog.dismiss();
             }
 			
-			if (result.length() == 2) {
+			if (result.length() == 8) {
 				refreshStatus(result, showDialog);
 			}
 			else {
@@ -287,9 +354,9 @@ public class SwitchActivity extends Activity {
 		private int switchIndex;
 		private ProgressDialog dialog;
 		
-		public SwitchTask(Context context) {
+		public SwitchTask(Context context, int pin) {
 			this.context = context;
-			this.switchPin = String.valueOf(10);
+			this.switchPin = String.valueOf(pin);
 			this.switchIndex = 1;
 			
 			dialog = new ProgressDialog(SwitchActivity.this);
@@ -320,7 +387,7 @@ public class SwitchActivity extends Activity {
 				dialog.dismiss();
             }
 			
-			if (result.length() == 2) {
+			if (result.length() == 8) {
 				refreshStatus(result, false);
 			}
 			else {
@@ -461,6 +528,98 @@ public class SwitchActivity extends Activity {
 				SwitchActivity.activity.finish();
 				SwitchActivity.this.finish();
 			}
+		}
+	}
+	
+	private class GetITask extends AsyncTask<Void, Void, String> {
+		
+		private Context context;
+		private String ssid;
+		private String password;
+		private Dialog outerDialog;
+		
+		private ProgressDialog dialog;
+		
+		public GetITask(Context context) {
+			this.context = context;
+			
+			dialog = new ProgressDialog(SwitchActivity.this);
+			dialog.setCancelable(true);
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.setMessage("Trying to connect...");
+			
+			if (!dialog.isShowing()) {
+				dialog.show();
+            }
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			return Service.sendHttpRequest(context, "6", Service.SOCKET_TIMEOUT_TRYING);
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+            }
+			ArrayList<Date> dates = new ArrayList<Date>();
+			ArrayList<Double> is = new ArrayList<Double>();
+			
+			String[] splitsa = result.split("A");
+			for (int i = 0; i < splitsa.length; i++) {
+				String[] splitsc = splitsa[i].split(",");
+				try {
+					dates.add(SharedValues.sdf.parse(splitsc[0].replace("_", " ")));
+					is.add(Double.parseDouble(splitsc[1]));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			double W = 0;
+			Date now = new Date();
+			if (dates.size() > 1) {
+				for (int i = 1; i < dates.size(); i++) {
+					if (dates.get(i).getMonth() == now.getMonth() && dates.get(i).getYear() == now.getYear()) {
+						long diff = dates.get(i).getTime() - dates.get(i - 1).getTime();
+						long diffMinutes = diff / (60 * 1000); 
+						W += diffMinutes * is.get(i - 1);
+					}
+				}
+			}
+			
+			final Dialog dialog = new Dialog(SwitchActivity.this);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.custom_dialog_unit);
+            dialog.setCancelable(true);
+            
+            final double unit = W * 0.00383333;
+
+            TextView textViewUnit = (TextView) dialog.findViewById(R.id.textViewUnit);
+            textViewUnit.setText(String.format("%.15f", unit));
+            final EditText editTextU = (EditText) dialog.findViewById(R.id.editTextU);
+            final TextView textViewBaht = (TextView) dialog.findViewById(R.id.textViewBaht);
+            
+            editTextU.setOnKeyListener(new OnKeyListener() {
+				
+				@Override
+				public boolean onKey(View v, int keyCode, KeyEvent event) {
+					try {
+						double baht = unit * Double.parseDouble(editTextU.getText().toString());
+						textViewBaht.setText(String.format("%.2f ฿", baht));
+					}
+					catch (NumberFormatException e) {
+						
+					}
+					return false;
+				}
+			});
+            
+            dialog.show();
 		}
 	}
 	
