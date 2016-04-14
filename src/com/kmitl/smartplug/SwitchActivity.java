@@ -385,7 +385,7 @@ public class SwitchActivity extends Activity {
             
             final Spinner spinnerSsid = (Spinner) dialog.findViewById(R.id.spinnerSsid);
             
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, ssids);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(SwitchActivity.this, android.R.layout.simple_spinner_dropdown_item, ssids);
             spinnerSsid.setAdapter(adapter);
             
             final EditText editTextPassword = (EditText) dialog.findViewById(R.id.editTextPassword);
