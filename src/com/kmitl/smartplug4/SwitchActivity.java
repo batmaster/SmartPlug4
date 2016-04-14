@@ -22,6 +22,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -36,6 +38,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -47,6 +50,17 @@ public class SwitchActivity extends Activity {
     private static final int REQUEST_MOCK_SETTING_FORCE_CLOSE = 12890;
     private static final int REQUEST_LOCATION_SETTING = 12891;
     private static final int REQUEST_MOCK_SETTING = 12892;
+    
+    private ListView drawer;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private static final int[] imageRids = {
+    		R.drawable.refresh,
+    		R.drawable.alarm,
+    		R.drawable.wifi,
+    		R.drawable.wifi
+    };
+ 
+    private DrawerAdapter adapter;
 	
 	private TextView textView0;
 	private ImageView imageViewSwitch1;
@@ -57,10 +71,6 @@ public class SwitchActivity extends Activity {
 	private ImageView imageViewBulb3;
 	private ImageView imageViewSwitch4;
 	private ImageView imageViewBulb4;
-	private ImageView imageViewLocation;
-	private ImageView imageViewSetAlarm;
-	private ImageView imageViewSetWifi;
-	private ImageView imageViewCheckUnit;
 	
 	public static SwitchActivity activity;
 	private GPSTracker gpsTracker;
@@ -88,72 +98,6 @@ public class SwitchActivity extends Activity {
 		
 		textView0 = (TextView) findViewById(R.id.textView0);
 		textView0.setText((SharedValues.getModePref(getApplicationContext()).equals("direct") ? "Direct Mode" : "Global Mode") + " ON/OFF");
-		
-		imageViewLocation = (ImageView) findViewById(R.id.imageViewLocation);
-		imageViewLocation.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				final Dialog dialog = new Dialog(SwitchActivity.this);
-	            //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-	            dialog.setContentView(R.layout.custom_dialog_location);
-	            dialog.setCancelable(true);
-	            
-	            final Switch switchEnable = (Switch) dialog.findViewById(R.id.switchEnable);
-	            switchEnable.setChecked(SharedValues.getEnableLocation(getApplicationContext()));
-	            
-	            Button buttonSetCenter = (Button) dialog.findViewById(R.id.buttonSetCenter);
-	            buttonSetCenter.setOnClickListener(new OnClickListener() {
-					
-					@Override
-					public void onClick(View v) {
-						checkGPS(false);
-					}
-				});
-	            
-	            final EditText editTextRange = (EditText) dialog.findViewById(R.id.editTextRange);
-	            editTextRange.setText(String.valueOf(SharedValues.getOffRange(getApplicationContext())));
-	            
-	            Button buttonCheck = (Button) dialog.findViewById(R.id.buttonCheck);
-	            buttonCheck.setOnClickListener(new OnClickListener() {
-					
-					@Override
-					public void onClick(View v) {
-						double lat = SharedValues.getLat(getApplicationContext());
-						double lng = SharedValues.getLng(getApplicationContext());
-						if (lat != 0 && lng != 0) {
-							Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lng));
-							intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-							startActivity(intent);
-						}
-						else {
-							Toast.makeText(getApplicationContext(), "ยังไม่ได้ตั้งค่า", Toast.LENGTH_SHORT).show();
-						}
-					}
-				});
-	            
-	            Button buttonCancel = (Button) dialog.findViewById(R.id.buttonCancel);
-	            buttonCancel.setOnClickListener(new OnClickListener() {
-	                public void onClick(View v) {
-	                	
-	                    dialog.cancel();
-	                    
-	                }
-	            });
-	            
-	            Button buttonSet = (Button) dialog.findViewById(R.id.buttonSet);
-	            buttonSet.setOnClickListener(new OnClickListener() {
-	                public void onClick(View v) {
-	                	SharedValues.setEnableLocation(getApplicationContext(), switchEnable.isChecked());
-	                	SharedValues.setOffRange(getApplicationContext(), Double.parseDouble(editTextRange.getText().toString()));
-	                	Toast.makeText(getApplicationContext(), "Enable: " + SharedValues.getEnableLocation(getApplicationContext()) + " Range: " + SharedValues.getOffRange(getApplicationContext()), Toast.LENGTH_SHORT).show();
-	                	dialog.dismiss();
-	                }
-	            });
-
-	            dialog.show();
-			}
-		});
 		
 		imageViewSwitch1 = (ImageView) findViewById(R.id.imageViewSwitch1);
 		imageViewSwitch1.setOnClickListener(new OnClickListener() {
@@ -223,37 +167,13 @@ public class SwitchActivity extends Activity {
 		
 		imageViewBulb4 = (ImageView) findViewById(R.id.imageViewBulb4);
 		
-		imageViewSetAlarm = (ImageView) findViewById(R.id.imageViewSetAlarm);
-		imageViewSetAlarm.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(getApplicationContext(), AlarmActivity.class);
-				startActivity(intent);
-			}
-		});
 		
-		imageViewSetWifi = (ImageView) findViewById(R.id.imageViewSetWifi);
-		imageViewSetWifi.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				AskWifiSSID task = new AskWifiSSID(getApplicationContext());
-				task.execute();
-			}
-		});
-		imageViewSetWifi.setVisibility(SharedValues.getModePref(getApplicationContext()).equals("global") ? View.VISIBLE : View.GONE);
-		
-		imageViewCheckUnit = (ImageView) findViewById(R.id.imageViewCheckUnit);
-		imageViewCheckUnit.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				GetITask task = new GetITask(getApplicationContext());
-				task.execute();
-				
-			}
-		});
+		drawer = (ListView) findViewById(R.id.list_slidermenu);
+        adapter = new DrawerAdapter(getApplicationContext(), imageRids, SharedValues.getModePref(getApplicationContext()).equals("global") ? View.VISIBLE : View.GONE);
+        drawer.setAdapter(adapter);
+        
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
 		
 		refreshStatus(getIntent().getStringExtra("the8Digits"), false);
 	}
@@ -264,6 +184,89 @@ public class SwitchActivity extends Activity {
 		unregisterReceiver(refreshSwitch);
 		super.onDestroy();
 	}
+	
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        switch (item.getItemId()) {
+        case 0:
+        	Intent intent = new Intent(getApplicationContext(), AlarmActivity.class);
+			startActivity(intent);
+            return true;
+        case 1:
+        	final Dialog dialog = new Dialog(SwitchActivity.this);
+            //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.custom_dialog_location);
+            dialog.setCancelable(true);
+            
+            final Switch switchEnable = (Switch) dialog.findViewById(R.id.switchEnable);
+            switchEnable.setChecked(SharedValues.getEnableLocation(getApplicationContext()));
+            
+            Button buttonSetCenter = (Button) dialog.findViewById(R.id.buttonSetCenter);
+            buttonSetCenter.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					checkGPS(false);
+				}
+			});
+            
+            final EditText editTextRange = (EditText) dialog.findViewById(R.id.editTextRange);
+            editTextRange.setText(String.valueOf(SharedValues.getOffRange(getApplicationContext())));
+            
+            Button buttonCheck = (Button) dialog.findViewById(R.id.buttonCheck);
+            buttonCheck.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					double lat = SharedValues.getLat(getApplicationContext());
+					double lng = SharedValues.getLng(getApplicationContext());
+					if (lat != 0 && lng != 0) {
+						Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lng));
+						intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+						startActivity(intent);
+					}
+					else {
+						Toast.makeText(getApplicationContext(), "ยังไม่ได้ตั้งค่า", Toast.LENGTH_SHORT).show();
+					}
+				}
+			});
+            
+            Button buttonCancel = (Button) dialog.findViewById(R.id.buttonCancel);
+            buttonCancel.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                	
+                    dialog.cancel();
+                    
+                }
+            });
+            
+            Button buttonSet = (Button) dialog.findViewById(R.id.buttonSet);
+            buttonSet.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                	SharedValues.setEnableLocation(getApplicationContext(), switchEnable.isChecked());
+                	SharedValues.setOffRange(getApplicationContext(), Double.parseDouble(editTextRange.getText().toString()));
+                	Toast.makeText(getApplicationContext(), "Enable: " + SharedValues.getEnableLocation(getApplicationContext()) + " Range: " + SharedValues.getOffRange(getApplicationContext()), Toast.LENGTH_SHORT).show();
+                	dialog.dismiss();
+                }
+            });
+
+            dialog.show();
+            return true;
+        case 2:
+        	AskWifiSSID task = new AskWifiSSID(getApplicationContext());
+			task.execute();
+            return true;
+        case 3:
+        	GetITask task2 = new GetITask(getApplicationContext());
+			task2.execute();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
 
 
 
