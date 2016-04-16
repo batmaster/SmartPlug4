@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.Window;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -52,12 +53,13 @@ public class SwitchActivity extends Activity {
     private static final int REQUEST_MOCK_SETTING = 12892;
     
     private ListView drawer;
+    private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private static final int[] imageRids = {
-    		R.drawable.refresh,
+    		R.drawable.locate,
     		R.drawable.alarm,
     		R.drawable.wifi,
-    		R.drawable.wifi
+    		R.drawable.costa
     };
  
     private DrawerAdapter adapter;
@@ -167,10 +169,107 @@ public class SwitchActivity extends Activity {
 		
 		imageViewBulb4 = (ImageView) findViewById(R.id.imageViewBulb4);
 		
-		
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawer = (ListView) findViewById(R.id.list_slidermenu);
         adapter = new DrawerAdapter(getApplicationContext(), imageRids, SharedValues.getModePref(getApplicationContext()).equals("global") ? View.VISIBLE : View.GONE);
         drawer.setAdapter(adapter);
+        drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mDrawerLayout.closeDrawer(drawer);
+                switch (position) {
+	                case 0:
+	                	final Dialog dialog = new Dialog(SwitchActivity.this);
+	                    //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+	                    dialog.setContentView(R.layout.custom_dialog_location);
+	                    dialog.setCancelable(true);
+	                    
+	                    final Switch switchEnable = (Switch) dialog.findViewById(R.id.switchEnable);
+	                    switchEnable.setChecked(SharedValues.getEnableLocation(getApplicationContext()));
+	                    
+	                    Button buttonSetCenter = (Button) dialog.findViewById(R.id.buttonSetCenter);
+	                    buttonSetCenter.setOnClickListener(new OnClickListener() {
+	        				
+	        				@Override
+	        				public void onClick(View v) {
+	        					checkGPS(false);
+	        				}
+	        			});
+	                    
+	                    final EditText editTextRange = (EditText) dialog.findViewById(R.id.editTextRange);
+	                    editTextRange.setText(String.valueOf(SharedValues.getOffRange(getApplicationContext())));
+	                    
+	                    Button buttonCheck = (Button) dialog.findViewById(R.id.buttonCheck);
+	                    buttonCheck.setOnClickListener(new OnClickListener() {
+	        				
+	        				@Override
+	        				public void onClick(View v) {
+	        					double lat = SharedValues.getLat(getApplicationContext());
+	        					double lng = SharedValues.getLng(getApplicationContext());
+	        					if (lat != 0 && lng != 0) {
+	        						Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lng));
+	        						intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+	        						startActivity(intent);
+	        					}
+	        					else {
+	        						Toast.makeText(getApplicationContext(), "ยังไม่ได้ตั้งค่า", Toast.LENGTH_SHORT).show();
+	        					}
+	        				}
+	        			});
+	                    
+	                    Button buttonCancel = (Button) dialog.findViewById(R.id.buttonCancel);
+	                    buttonCancel.setOnClickListener(new OnClickListener() {
+	                        public void onClick(View v) {
+	                        	
+	                            dialog.cancel();
+	                            
+	                        }
+	                    });
+	                    
+	                    Button buttonSet = (Button) dialog.findViewById(R.id.buttonSet);
+	                    buttonSet.setOnClickListener(new OnClickListener() {
+	                        public void onClick(View v) {
+	                        	SharedValues.setEnableLocation(getApplicationContext(), switchEnable.isChecked());
+	                        	SharedValues.setOffRange(getApplicationContext(), Double.parseDouble(editTextRange.getText().toString()));
+	                        	Toast.makeText(getApplicationContext(), "Enable: " + SharedValues.getEnableLocation(getApplicationContext()) + " Range: " + SharedValues.getOffRange(getApplicationContext()), Toast.LENGTH_SHORT).show();
+	                        	dialog.dismiss();
+	                        }
+	                    });
+	
+	                    dialog.show();
+	                    break;
+	                case 1:
+	                	Intent intent = new Intent(getApplicationContext(), AlarmActivity.class);
+	        			startActivity(intent);
+	                    break;
+	                case 2:
+	                	AskWifiSSID task = new AskWifiSSID(getApplicationContext());
+	        			task.execute();
+	        			break;
+	                case 3:
+	                	GetITask task2 = new GetITask(getApplicationContext());
+	        			task2.execute();
+	        			break;
+                }
+            }
+
+        });
+        
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
+
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                invalidateOptionsMenu();
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                invalidateOptionsMenu();
+            }
+        };
+
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
         
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -178,97 +277,19 @@ public class SwitchActivity extends Activity {
 		refreshStatus(getIntent().getStringExtra("the8Digits"), false);
 	}
 	
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 	
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(refreshSwitch);
 		super.onDestroy();
 	}
-	
-	@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        switch (item.getItemId()) {
-        case 0:
-        	Intent intent = new Intent(getApplicationContext(), AlarmActivity.class);
-			startActivity(intent);
-            return true;
-        case 1:
-        	final Dialog dialog = new Dialog(SwitchActivity.this);
-            //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            dialog.setContentView(R.layout.custom_dialog_location);
-            dialog.setCancelable(true);
-            
-            final Switch switchEnable = (Switch) dialog.findViewById(R.id.switchEnable);
-            switchEnable.setChecked(SharedValues.getEnableLocation(getApplicationContext()));
-            
-            Button buttonSetCenter = (Button) dialog.findViewById(R.id.buttonSetCenter);
-            buttonSetCenter.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					checkGPS(false);
-				}
-			});
-            
-            final EditText editTextRange = (EditText) dialog.findViewById(R.id.editTextRange);
-            editTextRange.setText(String.valueOf(SharedValues.getOffRange(getApplicationContext())));
-            
-            Button buttonCheck = (Button) dialog.findViewById(R.id.buttonCheck);
-            buttonCheck.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					double lat = SharedValues.getLat(getApplicationContext());
-					double lng = SharedValues.getLng(getApplicationContext());
-					if (lat != 0 && lng != 0) {
-						Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lng));
-						intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-						startActivity(intent);
-					}
-					else {
-						Toast.makeText(getApplicationContext(), "ยังไม่ได้ตั้งค่า", Toast.LENGTH_SHORT).show();
-					}
-				}
-			});
-            
-            Button buttonCancel = (Button) dialog.findViewById(R.id.buttonCancel);
-            buttonCancel.setOnClickListener(new OnClickListener() {
-                public void onClick(View v) {
-                	
-                    dialog.cancel();
-                    
-                }
-            });
-            
-            Button buttonSet = (Button) dialog.findViewById(R.id.buttonSet);
-            buttonSet.setOnClickListener(new OnClickListener() {
-                public void onClick(View v) {
-                	SharedValues.setEnableLocation(getApplicationContext(), switchEnable.isChecked());
-                	SharedValues.setOffRange(getApplicationContext(), Double.parseDouble(editTextRange.getText().toString()));
-                	Toast.makeText(getApplicationContext(), "Enable: " + SharedValues.getEnableLocation(getApplicationContext()) + " Range: " + SharedValues.getOffRange(getApplicationContext()), Toast.LENGTH_SHORT).show();
-                	dialog.dismiss();
-                }
-            });
-
-            dialog.show();
-            return true;
-        case 2:
-        	AskWifiSSID task = new AskWifiSSID(getApplicationContext());
-			task.execute();
-            return true;
-        case 3:
-        	GetITask task2 = new GetITask(getApplicationContext());
-			task2.execute();
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-
 
 	private void refreshStatus(String the8Digits, boolean isShowDialog) {
 			imageViewSwitch1.setImageResource(the8Digits.charAt(4) == '0' ? R.drawable.switch_off : R.drawable.switch_on);

@@ -35,19 +35,20 @@ public final class R {
         public static final int gradient_background=0x7f020006;
         public static final int header=0x7f020007;
         public static final int help=0x7f020008;
-        public static final int ic_luncher=0x7f020009;
-        public static final int ice=0x7f02000a;
-        public static final int icee=0x7f02000b;
-        public static final int iox=0x7f02000c;
-        public static final int lingo=0x7f02000d;
-        public static final int lippo=0x7f02000e;
-        public static final int locate=0x7f02000f;
-        public static final int logo=0x7f020010;
-        public static final int refresh=0x7f020011;
-        public static final int selection_divider=0x7f020012;
-        public static final int switch_off=0x7f020013;
-        public static final int switch_on=0x7f020014;
-        public static final int wifi=0x7f020015;
+        public static final int ic_drawer=0x7f020009;
+        public static final int ic_luncher=0x7f02000a;
+        public static final int ice=0x7f02000b;
+        public static final int icee=0x7f02000c;
+        public static final int iox=0x7f02000d;
+        public static final int lingo=0x7f02000e;
+        public static final int lippo=0x7f02000f;
+        public static final int locate=0x7f020010;
+        public static final int logo=0x7f020011;
+        public static final int refresh=0x7f020012;
+        public static final int selection_divider=0x7f020013;
+        public static final int switch_off=0x7f020014;
+        public static final int switch_on=0x7f020015;
+        public static final int wifi=0x7f020016;
     }
     public static final class id {
         public static final int ImageView1=0x7f09000a;
@@ -147,6 +148,8 @@ public final class R {
     public static final class string {
         public static final int action_settings=0x7f060002;
         public static final int app_name=0x7f060000;
+        public static final int drawer_close=0x7f060008;
+        public static final int drawer_open=0x7f060007;
         public static final int hello_world=0x7f060001;
         public static final int title_activity_alarm=0x7f060004;
         public static final int title_activity_before_connect=0x7f060006;

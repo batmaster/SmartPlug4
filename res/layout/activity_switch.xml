@@ -273,6 +273,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:choiceMode="singleChoice"
+        android:background="#FEC285"
         android:dividerHeight="1dp" />
 
 </android.support.v4.widget.DrawerLayout>

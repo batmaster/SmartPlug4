@@ -12,12 +12,12 @@ public class DrawerAdapter extends BaseAdapter {
 	
 	private Context context;
 	private int[] imageRids;
-	private int thirdState;
+	private int direct;
 	
-	public DrawerAdapter(Context context, int[] imageRids, int thirdState) {
+	public DrawerAdapter(Context context, int[] imageRids, int direct) {
 		this.context = context;
 		this.imageRids = imageRids;
-		this.thirdState = thirdState;
+		this.direct = direct;
 	}
 
 	@Override
@@ -40,14 +40,17 @@ public class DrawerAdapter extends BaseAdapter {
 		if (convertView == null) {
             LayoutInflater mInflater = (LayoutInflater)
                     context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-            convertView = mInflater.inflate(R.layout.listview_row, null);
+            convertView = mInflater.inflate(R.layout.drawer_row, null);
         }
           
         ImageView imageView1 = (ImageView) convertView.findViewById(R.id.imageView1);
         imageView1.setImageResource(imageRids[position]);
         
-        if (position == 3)
-        	convertView.setVisibility(thirdState);
+        if (position == 0)
+        	convertView.setVisibility(direct);
+        
+        if (position == 2)
+        	convertView.setVisibility(direct);
         	
         
         return convertView;

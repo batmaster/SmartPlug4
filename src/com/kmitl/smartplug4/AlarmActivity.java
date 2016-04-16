@@ -295,49 +295,46 @@ public class AlarmActivity extends FragmentActivity {
 			if (convertView == null)
 				convertView = mInflater.inflate(R.layout.listview_row, parent, false);
 			
+			DateTimeItem item = datetime.get(position);
+			
 			ToggleButton toggleButton1 = (ToggleButton) convertView.findViewById(R.id.toggleButton1);
-			toggleButton1.setChecked(datetime.get(position).get1() == 1);
-			if (datetime.get(position).get1() == 2) {
-				toggleButton1.setTextOff("");
-				toggleButton1.setTextOn("");
+			toggleButton1.setChecked(item.get1() == 1);
+			if (item.get1() == 2) {
+				toggleButton1.setVisibility(View.INVISIBLE);
 			}
 			
 			ToggleButton toggleButton2 = (ToggleButton) convertView.findViewById(R.id.toggleButton2);
-			toggleButton2.setChecked(datetime.get(position).get2() == 1);
-			if (datetime.get(position).get2() == 2) {
-				toggleButton2.setTextOff("");
-				toggleButton2.setTextOn("");
+			toggleButton2.setChecked(item.get2() == 1);
+			if (item.get2() == 2) {
+				toggleButton2.setVisibility(View.INVISIBLE);
 			}
 			
 			ToggleButton toggleButton3 = (ToggleButton) convertView.findViewById(R.id.toggleButton3);
-			toggleButton3.setChecked(datetime.get(position).get3() == 1);
-			if (datetime.get(position).get3() == 2) {
-				toggleButton3.setTextOff("");
-				toggleButton3.setTextOn("");
+			toggleButton3.setChecked(item.get3() == 1);
+			if (item.get3() == 2) {
+				toggleButton3.setVisibility(View.INVISIBLE);
 			}
 			
 			ToggleButton toggleButton4 = (ToggleButton) convertView.findViewById(R.id.toggleButton4);
-			toggleButton4.setChecked(datetime.get(position).get4() == 1);
-			if (datetime.get(position).get4() == 2) {
-				toggleButton4.setTextOff("");
-				toggleButton4.setTextOn("");
+			toggleButton4.setChecked(item.get4() == 1);
+			if (item.get4() == 2) {
+				toggleButton4.setVisibility(View.INVISIBLE);
 			}
 			
 			TextView textViewTime = (TextView) convertView.findViewById(R.id.textViewTime);
-			textViewTime.setText(datetime.get(position).getTime());
+			textViewTime.setText(item.getTime());
 			
 			TextView textViewDate = (TextView) convertView.findViewById(R.id.textViewDate);
-			textViewDate.setText(datetime.get(position).getDate());
-			
-			final String KEY = datetime.get(position).getDate().equals("") ? SharedValues.KEY_EVERYDAY : SharedValues.KEY_ONETIME;
-			final DateTimeItem ITEM = datetime.get(position);
+			textViewDate.setText(item.getDate());
 			
 			Button buttonDelete = (Button) convertView.findViewById(R.id.buttonDelete);
 			buttonDelete.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
-					Toast.makeText(getApplicationContext(), "ยังไม่ได้ทำไรเลย", Toast.LENGTH_SHORT).show();
+					datetime.remove(position);
+					SetAlarmTask task = new SetAlarmTask(context, datetime);
+					task.execute();
 				}
 			});
 
@@ -383,6 +380,9 @@ public class AlarmActivity extends FragmentActivity {
 			if (dialog.isShowing()) {
 				dialog.dismiss();
             }
+			
+			CheckAlarmTask task = new CheckAlarmTask(context);
+			task.execute();
 			
 			
 		}
@@ -439,8 +439,8 @@ public class AlarmActivity extends FragmentActivity {
 				Collections.sort(items);
 				listViewDateTime.setAdapter(new ListViewRowAdapter(getApplicationContext(), items));
 				
-				SetAlarmTask task = new SetAlarmTask(getApplicationContext(), items);
-				task.execute();
+//				SetAlarmTask task = new SetAlarmTask(getApplicationContext(), items);
+//				task.execute();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -490,7 +490,8 @@ public class AlarmActivity extends FragmentActivity {
 				dialog.dismiss();
             }
 
-			
+			CheckAlarmTask task = new CheckAlarmTask(context);
+			task.execute();
 		}
 	}
 }

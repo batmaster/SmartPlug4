@@ -8,5 +8,8 @@
     <string name="title_activity_alarm">AlarmActivity</string>
     <string name="title_activity_setting">SettingActivity</string>
     <string name="title_activity_before_connect">BeforeConnectActivity</string>
+    
+    <string name="drawer_open">Open Navigation drawer</string>
+    <string name="drawer_close">Close Navigation drawer</string>
 
 </resources>
